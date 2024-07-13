@@ -13,12 +13,12 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private static final int SCREEN_WIDTH = 600;
     private static final int SCREEN_HEIGHT = 600;
-    private static final int UNIT_SIZE = 25;
+    private static final int UNIT_SIZE = 15; // Izgaralarin buyukulugunu ayarlama 25
     private static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
-    private static final int DELAY = 75;
+    private static final int DELAY = 125; // Oyun hizini degistirmek icin
 
-    private final int x[] = new int[GAME_UNITS];
-    private final int y[] = new int[GAME_UNITS];
+    private final int[] x = new int[GAME_UNITS];
+    private final int[] y = new int[GAME_UNITS];
     private int bodyParts = 6;
     private int applesEaten;
     private int appleX;
@@ -26,7 +26,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private char direction = 'R';
     private boolean running = false;
     private Timer timer;
-    private Random random;
+    private final Random random;
 
     public GamePanel() {
         random = new Random();
@@ -42,7 +42,23 @@ public class GamePanel extends JPanel implements ActionListener {
         running = true;
         timer = new Timer(DELAY, this);
         timer.start();
+
+        // Yılanın başlangıç konumunu yeniden ayarla
+        bodyParts = 6;
+        for (int i = 0; i < bodyParts; i++) {
+            x[i] = 0;
+            y[i] = 0;
+        }
+
+        // Yönü ve başlangıç konumunu ayarla
+        direction = 'R';
+        x[0] = 0;
+        y[0] = 0;
+
+        // Yeniden çiz
+        repaint();
     }
+
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -111,6 +127,7 @@ public class GamePanel extends JPanel implements ActionListener {
         for (int i = bodyParts; i > 0; i--) {
             if ((x[0] == x[i]) && (y[0] == y[i])) {
                 running = false;
+                break;
             }
         }
 
@@ -140,6 +157,11 @@ public class GamePanel extends JPanel implements ActionListener {
         g.setFont(new Font("Ink Free", Font.BOLD, 75));
         FontMetrics metrics = getFontMetrics(g.getFont());
         g.drawString("Game Over", (SCREEN_WIDTH - metrics.stringWidth("Game Over")) / 2, SCREEN_HEIGHT / 2);
+
+        g.setColor(Color.green);
+        g.setFont(new Font("Ink Free", Font.BOLD, 25));
+        FontMetrics metrics2 = getFontMetrics(g.getFont());
+        g.drawString("Space for Restart", (SCREEN_WIDTH / 3), SCREEN_HEIGHT * 2 / 3);
     }
 
     @Override
@@ -176,7 +198,13 @@ public class GamePanel extends JPanel implements ActionListener {
                         direction = 'D';
                     }
                     break;
+                case KeyEvent.VK_SPACE:
+                    if (!running) {
+                        startGame(); // Oyunu tekrar başlat
+                    }
+                    break;
             }
         }
     }
+
 }
