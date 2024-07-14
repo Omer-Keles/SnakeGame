@@ -13,9 +13,9 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private static final int SCREEN_WIDTH = 600;
     private static final int SCREEN_HEIGHT = 600;
-    private static final int UNIT_SIZE = 15; // Izgaralarin buyukulugunu ayarlama 25
+    private static final int UNIT_SIZE = 15; // default value is 25
     private static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
-    private static final int DELAY = 125; // Oyun hizini degistirmek icin
+    private static final int DELAY = 120; // default value is 75
 
     private final int[] x = new int[GAME_UNITS];
     private final int[] y = new int[GAME_UNITS];
@@ -38,26 +38,22 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void startGame() {
-        newApple();
-        running = true;
-        timer = new Timer(DELAY, this);
-        timer.start();
-
-        // Yılanın başlangıç konumunu yeniden ayarla
+        applesEaten = 0; // Puanı sıfırla
         bodyParts = 6;
         for (int i = 0; i < bodyParts; i++) {
             x[i] = 0;
             y[i] = 0;
         }
-
-        // Yönü ve başlangıç konumunu ayarla
         direction = 'R';
         x[0] = 0;
         y[0] = 0;
-
-        // Yeniden çiz
+        newApple();
+        running = true;
+        timer = new Timer(DELAY, this); // Timer'ı varsayılan gecikme ile başlat
+        timer.start();
         repaint();
     }
+
 
 
     public void paintComponent(Graphics g) {
@@ -83,14 +79,21 @@ public class GamePanel extends JPanel implements ActionListener {
                 }
                 g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
             }
+
+            // Puanı çiz
+            g.setColor(Color.BLUE);
+            g.setFont(new Font("Ink Free", Font.BOLD, 40));
+            FontMetrics metrics = getFontMetrics(g.getFont());
+            g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2, g.getFont().getSize());
         } else {
             gameOver(g);
         }
     }
 
+
     public void newApple() {
-        appleX = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
-        appleY = random.nextInt((int) (SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
+        appleX = random.nextInt(SCREEN_WIDTH / UNIT_SIZE) * UNIT_SIZE;
+        appleY = random.nextInt(SCREEN_HEIGHT / UNIT_SIZE) * UNIT_SIZE;
     }
 
     public void move() {
@@ -120,8 +123,11 @@ public class GamePanel extends JPanel implements ActionListener {
             bodyParts++;
             applesEaten++;
             newApple();
+            timer.setDelay(Math.max(DELAY - applesEaten, 50)); // Oyun hızını arttır
         }
     }
+
+
 
     public void checkCollisions() {
         for (int i = bodyParts; i > 0; i--) {
@@ -153,6 +159,12 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void gameOver(Graphics g) {
+        // Puanı göster
+        g.setColor(Color.BLUE);
+        g.setFont(new Font("Ink Free", Font.BOLD, 40));
+        FontMetrics metrics1 = getFontMetrics(g.getFont());
+        g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics1.stringWidth("Score: " + applesEaten)) / 2, g.getFont().getSize());
+
         g.setColor(Color.red);
         g.setFont(new Font("Ink Free", Font.BOLD, 75));
         FontMetrics metrics = getFontMetrics(g.getFont());
@@ -161,7 +173,7 @@ public class GamePanel extends JPanel implements ActionListener {
         g.setColor(Color.green);
         g.setFont(new Font("Ink Free", Font.BOLD, 25));
         FontMetrics metrics2 = getFontMetrics(g.getFont());
-        g.drawString("Space for Restart", (SCREEN_WIDTH / 3), SCREEN_HEIGHT * 2 / 3);
+        g.drawString("Space for Restart", (SCREEN_WIDTH - metrics2.stringWidth("Space for Restart")) / 2, SCREEN_HEIGHT * 2 / 3);
     }
 
     @Override
